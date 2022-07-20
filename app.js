@@ -34,6 +34,8 @@ app.use(jwt({
   secret: config.jwtSecretKey,
   algorithms: ["HS256"],
 }).unless({ path: [/^\/api\//] }))
+// 托管静态资源文件
+app.use('/uploads', express.static('./uploads'))
 
 //导入路由模块
 //用户注册登录
@@ -45,6 +47,10 @@ app.use('/my', userInfoRouter)
 //获取文章分类
 const artCateRouter = require('./router/artcate')
 app.use('/my/article', artCateRouter)
+// 导入并使用文章路由模块
+const articleRouter = require('./router/articles')
+// 为文章的路由挂载统一的访问前缀 /my/article
+app.use('/my/article', articleRouter)
 
 //错误级别中间件
 app.use((err, req, res, next) => {

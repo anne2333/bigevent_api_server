@@ -12,7 +12,7 @@ exports.getArtcates = (req, res) => {
       status: 0,
       message: '获取文章分类列表成功',
       // 为了方便客户端使用 Token，在服务器端直接拼接上 Bearer 的前缀
-      data: result[0]
+      data: result
     })
   })
 }

@@ -39,9 +39,9 @@ exports.regUser = (req, res) => {
       if (err)
         return res.cc(err)
       if (result.affectedRows != 1)
-        return res.send('注册用户失败')
+        return res.cc('注册用户失败')
       //注册成功
-      return res.send('注册用户成功', 0)
+      return res.cc('注册用户成功', 0)
     })
   })
 }
