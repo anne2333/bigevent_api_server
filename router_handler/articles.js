@@ -1,6 +1,7 @@
-const path = require('path')
 // 导入数据库操作模块
 const db = require('../db/index')
+const path = require('path')
+const { string } = require('joi')
 
 // 发布新文章的处理函数
 exports.addArticle = (req, res) => {
@@ -30,5 +31,53 @@ exports.addArticle = (req, res) => {
 
         // 发布文章成功
         res.cc('发布文章成功', 0)
+    })
+}
+
+//获取文章列表
+exports.getArticleList = (req, res) => {
+    var q = req.query
+    var sql = `select count(*) count from ev_articles where is_delete=0 `
+    if (q.cate_id != '') sql += ' and cate_id = ' + q.cate_id
+    if (q.state != '') sql += " and state='" + q.state + "'"
+    db.query(sql, function (err, result) {
+        //执行sql失败
+        if (err) return res.cc(err)
+        var total = result[0]['count']
+        var _sql = `select art.*,cate.name from ev_articles art  
+        left join ev_article_cate cate on 
+        cate.id =art.cate_id where art.is_delete=0 and cate.is_delete = 0 `
+        if (q.cate_id != '') _sql += ' and art.cate_id = ' + q.cate_id
+        if (q.state != '') _sql += " and art.state='" + q.state + "'"
+        _sql += ` order by pub_date desc limit ? , ? `
+        var start = (q.pagenum - 1) * q.pagesize
+        var size = parseInt(q.pagesize)
+        db.query(_sql, [start, size], function (err, result) {
+            //执行sql失败
+            if (err) return res.cc(err)
+            res.send({
+                status: 0,
+                message: '获取文章列表成功',
+                // 为了方便客户端使用 Token，在服务器端直接拼接上 Bearer 的前缀
+                data: result,
+                total
+            })
+        })
+    })
+
+}
+
+//根据ID删除文章
+exports.deleteArticle = (req, res) => {
+    const sql = `update ev_articles set is_delete=1 where id=?`
+    db.query(sql, req.params.id, (err, result) => {
+        // 执行 SQL 语句失败
+        if (err) return res.cc(err)
+
+        // SQL 语句执行成功，但是影响行数不等于 1
+        if (result.affectedRows !== 1) return res.cc('删除文章失败！')
+
+        // 删除文章分类成功
+        res.cc('删除文章成功！', 0)
     })
 }
